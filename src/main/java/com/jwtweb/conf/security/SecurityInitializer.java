@@ -1,4 +1,4 @@
-package com.jwtweb.configurations;
+package com.jwtweb.conf.security;
 
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
 

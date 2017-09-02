@@ -51,18 +51,24 @@ public class UserController {
 	public String defaultPage(Principal principal, Authentication auth, HttpServletRequest request) {
 	
 	  request.setAttribute("title", "Spring Security Login Form - Database Authentication");
-	  request.setAttribute("message", "This is admin page!");
+	  request.setAttribute("message", "This is User page!");
 	  if(principal == null){
 		 return "redirect:/";
 	  }else{
+		  Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		  if (!(authentication instanceof AnonymousAuthenticationToken)) {
+		      String currentUserName = (String) authentication.getCredentials();
+		      System.out.println(currentUserName);
+		  }
 		  Collection<?extends GrantedAuthority> granted = auth.getAuthorities();
 		  String role;
 		  for(int i=0;i<granted.size();i++){
 		        role = granted.toArray()[i] + "";
 		        System.out.println(role);
 		        //verify if user contain role to view dashboard page default
-		        if(role.equals("ROLE_ADMIN")){
-		        	return "admin/welcome";
+		        if(role.equals("ROLE_ADMINISTRATOR")){
+		        	request.setAttribute("message", "This is Admin page!");
+		      	  	return "admin/welcome";
 		        }              
 		    }
 	  }
@@ -73,6 +79,7 @@ public class UserController {
 	@GetMapping("commisionDetails")
 	public String viewCommision(Principal principal){
 		
+		System.out.println("shi bc!"+principal);
 		if(principal != null){
 			return "viewCommision";
 		}

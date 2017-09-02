@@ -1,4 +1,4 @@
-package com.jwtweb.configurations;
+package com.jwtweb.conf.security;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,12 +6,14 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,7 +21,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+import com.jwtweb.customauthenticationfilter.CustomAuthenticationProvider;
+import com.jwtweb.customauthenticationfilter.CustomUsernamePasswordAuthenticationFilter;
+import com.jwtweb.filter.CustomFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -28,42 +35,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 	
 	@Autowired
 	DataSource dataSource;
-	
-
-	@Bean
-	public CustomUsernamePasswordAuthenticationFilter customUsernamePasswordAuthenticationFilter()
-			throws Exception {
-		CustomUsernamePasswordAuthenticationFilter authFilter = new CustomUsernamePasswordAuthenticationFilter();
-		authFilter.setRequiresAuthenticationRequestMatcher(new AntPathRequestMatcher("/login","POST"));
-	    authFilter.setAuthenticationManager(authenticationManagerBean());
-	    authFilter.setUsernameParameter("j_username");
-	    authFilter.setPasswordParameter("j_password");
-	    return authFilter;
-	}
-
-	@Bean
-	public CustomSuccessHandler customSuccessHandler() {
-		CustomSuccessHandler customSuccessHandler = new CustomSuccessHandler();
 		
-		return customSuccessHandler;
-	}
+	@Autowired
+    CustomAuthenticationProvider authenticationProvider;
 
-	@Bean
-	public CustomAuthenticationProvider customAuthenticationProvider() {
-		CustomAuthenticationProvider customAuthenticationProvider = new CustomAuthenticationProvider();
-		return customAuthenticationProvider;
-	}
-
-	@Bean
 	@Override
-	public AuthenticationManager authenticationManagerBean() throws Exception {
-		List<AuthenticationProvider> authenticationProviderList = new ArrayList<AuthenticationProvider>();
-		authenticationProviderList.add(customAuthenticationProvider());
-		AuthenticationManager authenticationManager = new ProviderManager(
-				authenticationProviderList);
-		return authenticationManager;
-	}
-	
+    protected void configure(
+      AuthenticationManagerBuilder auth) throws Exception {
+  
+        auth.authenticationProvider(authenticationProvider);
+    }
 	
 	@Autowired
 	public void configAuthentication(AuthenticationManagerBuilder auth) throws Exception{
@@ -75,6 +56,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 			"select username, role from user_roles where username=?");
 	}
 	
+//    @Override
+//    protected void configure(
+//      AuthenticationManagerBuilder auth) throws Exception {
+//  
+//        auth.authenticationProvider(authProvider);
+//    }
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception{
@@ -92,13 +79,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 //		http.csrf().disable();
 		
 		http.authorizeRequests()
-			.antMatchers("/admin/**").access("hasRole('ROLE_ADMIN')");
-		
-	    http.formLogin().loginProcessingUrl("/checkLogin")
+			.antMatchers("/admin/**").access("hasRole('ROLE_ADMINISTRATOR')");
+		http.formLogin().loginProcessingUrl("/checkLogin")
 			.defaultSuccessUrl("/welcome")
 			.loginPage("/").failureUrl("/?error=true")
 			.usernameParameter("j_username").passwordParameter("j_password");
-	    http.addFilterBefore(customUsernamePasswordAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 	    http.logout().logoutSuccessUrl("/?logout=true");
 		http.exceptionHandling().accessDeniedPage("/403");
 		http.csrf().disable();

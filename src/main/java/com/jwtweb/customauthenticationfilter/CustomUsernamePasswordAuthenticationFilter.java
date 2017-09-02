@@ -1,4 +1,4 @@
-package com.jwtweb.configurations;
+package com.jwtweb.customauthenticationfilter;
 
 import java.io.IOException;
 

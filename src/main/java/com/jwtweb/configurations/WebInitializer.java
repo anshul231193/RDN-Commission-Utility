@@ -51,10 +51,10 @@ import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatche
             return null;
         }
         
-        @Override
-        protected Filter[] getServletFilters() {
-            return new Filter[]{new DelegatingFilterProxy("customUsernamePasswordAuthenticationFilter")};
-        }
+//        @Override
+//        protected Filter[] getServletFilters() {
+//            return new Filter[]{new DelegatingFilterProxy("customUsernamePasswordAuthenticationFilter")};
+//        }
 
 }
     

@@ -21,8 +21,9 @@ public class ExceptionController {
 	  //check if user is login
 	  Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 	  if (!(auth instanceof AnonymousAuthenticationToken)) {
-		UserDetails userDetail = (UserDetails) auth.getPrincipal();
-		model.addObject("username", userDetail.getUsername());
+		  System.out.println(auth.getPrincipal());
+//		UserDetails userDetail = (UserDetails) auth.getPrincipal();
+		model.addObject("username", auth.getPrincipal());
 	  }
 
 	  model.setViewName("exception/403");
